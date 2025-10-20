@@ -35,3 +35,8 @@ deployment/.terraform.tfstate.lock.info
 # Ignore CLI configuration files
 deployment/.terraformrc
 deployment/terraform.rc
+
+
+# Lambda .zips, node_modules
+src/lambda/*/*.zip
+src/lambda/*/node_modules
