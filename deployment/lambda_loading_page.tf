@@ -14,3 +14,10 @@ resource "aws_lambda_function" "lambda_loading_page" {
   source_code_hash = data.archive_file.lambda_loading_page.output_base64sha256
 }
 
+resource "aws_lambda_permission" "api-access" {
+  statement_id = "AllowExecutionFromAPIGateway"
+  action = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_loading_page.function_name
+  principal = "apigateway.amazonaws.com"
+  source_arn = "${aws_apigatewayv2_api.api.execution_arn}"
+}
