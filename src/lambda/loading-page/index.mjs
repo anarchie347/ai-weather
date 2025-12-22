@@ -1,27 +1,14 @@
-const hello_world_html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>
-        Hello World!
-    </h1>
-</body>
-</html>
-`;
+import fs from "node:fs";
+
+const html = fs.readFileSync("index.html", "utf-8");
 
 export async function handler(event) {
-  console.log("TESTING");
   const response = {
     statusCode: 200,
     headers: {
       "Content-Type": "text/html",
     },
-    body: hello_world_html,
+    body: html,
   };
   return response;
 }
