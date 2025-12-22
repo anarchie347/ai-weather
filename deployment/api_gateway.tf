@@ -8,9 +8,8 @@ resource "aws_apigatewayv2_integration" "api-loading-lambda" {
   integration_type = "AWS_PROXY"
 
   connection_type = "INTERNET"
-  content_handling_strategy = "CONVERT_TO_TEXT"
   description = "links to the loading page lambda"
-  integration_method = "GET"
+  integration_method = "POST"
   integration_uri = aws_lambda_function.lambda_loading_page.invoke_arn
 }
 
@@ -18,5 +17,11 @@ resource "aws_apigatewayv2_route" "api-ai-weather" {
   api_id = aws_apigatewayv2_api.api.id
   route_key = "GET /ai-weather"
   target = "integrations/${aws_apigatewayv2_integration.api-loading-lambda.id}"
+}
+
+resource "aws_apigatewayv2_stage" "api-ai-weather-stage" {
+  api_id = aws_apigatewayv2_api.api.id
+  name = "$default"
+  auto_deploy = true
 }
 

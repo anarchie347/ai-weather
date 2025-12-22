@@ -19,7 +19,7 @@ resource "aws_lambda_permission" "api-access" {
   action = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda_loading_page.function_name
   principal = "apigateway.amazonaws.com"
-  source_arn = "${aws_apigatewayv2_api.api.execution_arn}"
+  source_arn = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }
 
 resource "aws_iam_role_policy_attachment" "lambda-loading-page-logs" {
