@@ -6,6 +6,22 @@
     <title>Document</title>
   </head>
   <body>
-    <h1>Some important text</h1>
+    <div id="container">
+      <h1>AI-Weather!!</h1>
+      <form onsubmit="placeSubmit(); return false;" id="place-selector">
+        <label for="place">Place:</label>
+        <input id="place" type="text" name="place" />
+        <input type="submit" name="submit" value="Get Weather!" />
+      </form>
+    </div>
   </body>
+  <script>
+    async function placeSubmit() {
+      const place = document.getElementById("place").value;
+      console.log(place);
+
+      const newsite = fetch("HERE");
+      console.log(newsite);
+    }
+  </script>
 </html>
