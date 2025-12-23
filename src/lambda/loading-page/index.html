@@ -20,8 +20,9 @@
       const place = document.getElementById("place").value;
       console.log(place);
 
-      const newsite = fetch("HERE");
+      const newsite = await (await fetch("ai-get")).text();
       console.log(newsite);
+      document.getElementById("container").innerHTML = newsite;
     }
   </script>
 </html>

@@ -22,7 +22,3 @@ resource "aws_lambda_permission" "api-access" {
   source_arn = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }
 
-resource "aws_iam_role_policy_attachment" "lambda-loading-page-logs" {
-  role = aws_iam_role.lambda_assume_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
