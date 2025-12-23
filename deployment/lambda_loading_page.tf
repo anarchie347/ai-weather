@@ -14,7 +14,7 @@ resource "aws_lambda_function" "lambda_loading_page" {
   source_code_hash = data.archive_file.lambda_loading_page.output_base64sha256
 }
 
-resource "aws_lambda_permission" "api-access" {
+resource "aws_lambda_permission" "api_access" {
   statement_id = "AllowExecutionFromAPIGateway"
   action = "lambda:InvokeFunction"
   function_name = aws_lambda_function.lambda_loading_page.function_name
