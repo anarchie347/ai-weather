@@ -7,10 +7,8 @@ export async function handler(event) {
   const lat = 52.52;
   const long = 13.41;
   const wd = await getWeatherData(lat, long);
-  console.log(JSON.stringify(wd, null, 2));
   const formattedWd = tmpFormatData(wd);
   const substitutedHTML = html.replace("$$WEATHER_DATA$$", formattedWd);
-  console.log(substitutedHTML);
   await new Promise((res) => setTimeout(res, 1000));
   const response = {
     statusCode: 200,
@@ -19,7 +17,6 @@ export async function handler(event) {
     },
     body: substitutedHTML,
   };
-  console.log(JSON.stringify(response, null, 2));
   return response;
 }
 
@@ -57,7 +54,7 @@ async function getWeatherData(lat, long) {
   const hourly = response.hourly();
 
   // Note: The order of weather variables in the URL query and the indices below need to match!
-  const weatherData = {
+  return {
     hourly: {
       time: Array.from(
         {
