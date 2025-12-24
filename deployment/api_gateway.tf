@@ -41,3 +41,6 @@ resource "aws_apigatewayv2_stage" "api_ai_weather_stage" {
   auto_deploy = true
 }
 
+output "api_url" {
+  value = aws_apigatewayv2_api.api.api_endpoint
+}
