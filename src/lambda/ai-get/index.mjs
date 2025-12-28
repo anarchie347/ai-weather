@@ -9,12 +9,9 @@ const PREPROMPTv1 = `respond with just plaintext html/css/js (one file) of a web
 The webpage should make heavy use of css and look like a sleek, modern weather app, however it requires no functionality beyond displaying this data. It does not need a search bar, or any interactivity beyond aesthetics.
 The website should work properly with both mobile and desktop and all browsers and have some unique flair meaning if this prompt is used again the result will be drastically different. The design does not have to be adaptable to different sets of weather data, it is only going to be used with the data provided, so incorporate the weather data into the styling, not just displaying the information in a standard format`;
 
-export async function handler(event, x, y) {
-  console.log(event);
-  console.log(x);
-  console.log(y);
-  const lat = 52.52;
-  const long = 13.41;
+export async function handler(event) {
+  const lat = Number.parseInt(event.queryStringParameters.lat);
+  const long = Number.parseInt(event.queryStringParameters.long);
   const wd = await getWeatherData(lat, long);
   formatWeatherObj(wd);
   const wdStr = encode(wd);
