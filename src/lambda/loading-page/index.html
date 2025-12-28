@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Ai Weather</title>
   </head>
   <body>
-    <div id="container">
+    <div id="place-selector-container">
       <h1>AI-Weather!!</h1>
       <form onsubmit="placeSubmit(); return false;" id="place-selector">
         <label for="place">Place:</label>
@@ -14,15 +14,42 @@
         <input type="submit" name="submit" value="Get Weather!" />
       </form>
     </div>
+    <div id="fetching-container" hidden>
+      <h1>Fetching...</h1>
+    </div>
+    <div id="generated-app-container" hidden=>
+      <iframe
+        src=""
+        id="display"
+        onload="onAppLoaded();"
+      >
+      </iframe>
+    </div>
   </body>
+  <style>
+    iframe {
+      width: 100%;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+  </style>
   <script>
     async function placeSubmit() {
       const place = document.getElementById("place").value;
       console.log(place);
-
-      const newsite = await (await fetch("ai-get")).text();
-      console.log(newsite);
-      document.getElementById("container").innerHTML = newsite;
+      document.getElementById("display").setAttribute("src", "/ai-get");
+      document.getElementById("fetching-container").hidden = false;
+      document.getElementById("place-selector-container").hidden = true;
+      //const newsite = await (await fetch("ai-get")).text();
+      //console.log(newsite);
+      //document.getElementById("container").innerHTML = newsite;
+    }
+    function onAppLoaded() {
+      if (document.getElementById("display").getAttribute("src") == "") return;
+      document.getElementById("fetching-container").hidden = true;
+      document.getElementById("generated-app-container").hidden = false;
     }
   </script>
 </html>
