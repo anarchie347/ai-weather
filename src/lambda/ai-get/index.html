@@ -3,10 +3,783 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Weather Dashboard</title>
+    <style>
+      :root {
+        --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        --card-bg: rgba(255, 255, 255, 0.08);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --accent: #4facfe;
+        --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg-gradient);
+        color: var(--text-primary);
+        font-family: var(--font-main);
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Mobile-first approach, centered container for desktop */
+      #app-container {
+        width: 100%;
+        height: 100%;
+        max-width: 480px;
+        max-height: 900px;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        position: relative;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
+      @media (min-width: 500px) {
+        #app-container {
+          border-radius: 40px;
+          height: 90vh;
+          border: 1px solid var(--card-border);
+        }
+
+        /* Custom Scrollbar for desktop */
+        #app-container::-webkit-scrollbar {
+          width: 6px;
+        }
+        #app-container::-webkit-scrollbar-thumb {
+          background-color: rgba(255, 255, 255, 0.2);
+          border-radius: 3px;
+        }
+      }
+
+      /* Header / Current Weather */
+      header {
+        padding: 40px 24px 20px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .location {
+        font-size: 1.5rem;
+        font-weight: 500;
+        margin-bottom: 5px;
+        letter-spacing: 0.5px;
+      }
+
+      .date {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+        font-weight: 300;
+      }
+
+      .current-temp-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        margin-bottom: 10px;
+      }
+
+      .current-temp {
+        font-size: 6rem;
+        font-weight: 200;
+        line-height: 1;
+        letter-spacing: -2px;
+        background: linear-gradient(to bottom, #fff, #a5c9e1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .degree-symbol {
+        font-size: 2rem;
+        margin-top: 15px;
+        color: var(--text-primary);
+      }
+
+      .weather-desc {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        text-transform: capitalize;
+        margin-bottom: 30px;
+      }
+
+      .high-low {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      /* Generic Section Styling */
+      section {
+        padding: 0 20px;
+        margin-bottom: 25px;
+      }
+
+      h3 {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      h3 svg {
+        width: 16px;
+        height: 16px;
+        fill: var(--text-secondary);
+      }
+
+      /* Chart Section */
+      .chart-container {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 20px;
+        height: 220px;
+        position: relative;
+      }
+
+      canvas {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Hourly Scroll */
+      .hourly-scroll {
+        display: flex;
+        overflow-x: auto;
+        gap: 15px;
+        padding-bottom: 10px;
+        padding-left: 20px; /* Offset for scroll start */
+        padding-right: 20px;
+        margin: 0 -20px 25px -20px; /* Break out of container padding */
+        scrollbar-width: none; /* Firefox */
+      }
+
+      .hourly-scroll::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+      }
+
+      .hour-card {
+        min-width: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 10px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 30px;
+        height: 110px;
+        transition: transform 0.2s;
+      }
+
+      .hour-card.active {
+        background: rgba(79, 172, 254, 0.2);
+        border-color: rgba(79, 172, 254, 0.4);
+      }
+
+      .hour-time {
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .hour-icon svg {
+        width: 24px;
+        height: 24px;
+        fill: white;
+      }
+
+      .hour-temp {
+        font-size: 1rem;
+        font-weight: 500;
+      }
+
+      /* Grid Details */
+      .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        padding-bottom: 40px;
+      }
+
+      .detail-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .detail-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .detail-label svg {
+        width: 14px;
+        height: 14px;
+        opacity: 0.7;
+      }
+
+      .detail-value {
+        font-size: 1.8rem;
+        font-weight: 500;
+      }
+
+      .detail-sub {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+    </style>
   </head>
   <body>
-    <h1>Requested content:</h1>
-    $$WEATHER_DATA$$
+    <div id="app-container">
+      <header>
+        <div class="location">London, UK</div>
+        <div class="date" id="current-date">--</div>
+
+        <div class="current-temp-wrapper">
+          <div class="current-temp" id="main-temp">--</div>
+          <div class="degree-symbol">°</div>
+        </div>
+
+        <div class="weather-desc" id="weather-desc">--</div>
+
+        <div class="high-low">
+          <span>H: <span id="high-temp">--</span>°</span>
+          <span>L: <span id="low-temp">--</span>°</span>
+        </div>
+      </header>
+
+      <section>
+        <h3>
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm3.3 14.71L11 12.41V7h2v4.59l3.71 3.71-1.42 1.41z"
+            />
+          </svg>
+          24-Hour Forecast
+        </h3>
+        <div class="hourly-scroll" id="hourly-list"></div>
+      </section>
+
+      <section>
+        <h3>
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="currentColor"
+              d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"
+            />
+          </svg>
+          Temperature Trend
+        </h3>
+        <div class="chart-container">
+          <canvas id="tempChart"></canvas>
+        </div>
+      </section>
+
+      <section>
+        <div class="details-grid">
+          <div class="detail-card">
+            <div class="detail-label">
+              <svg viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12 2c-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9s9-4.03 9-9c0-4.97-4.03-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7z"
+                />
+              </svg>
+              Feels Like
+            </div>
+            <div class="detail-value"><span id="feels-like">--</span>°</div>
+            <div class="detail-sub">Wind chill factor</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">
+              <svg viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12.36 6l.08.59c.32 2.41 2.38 4.25 4.87 4.25h.06c.3-.01.59-.04.88-.09.31-.05.63.17.68.49.05.31-.17.63-.49.68-.34.05-.69.09-1.05.09-3.34 0-6.15-2.43-6.66-5.65L10.67 6c-.18-1.29-.68-2.5-1.45-3.53-.17-.23-.5-.27-.72-.09-.22.18-.26.5-.08.73.66.88 1.09 1.92 1.25 3.03l.69 4.82c.4 2.8 2.76 4.92 5.58 5.03h.3c.27 0 .5-.21.5-.49 0-.28-.21-.5-.49-.5h-.26c-2.35-.1-4.32-1.87-4.66-4.21L12.36 6zM4 14h5c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1z"
+                />
+              </svg>
+              Wind
+            </div>
+            <div class="detail-value">
+              <span id="wind-speed">--</span>
+              <span style="font-size: 0.5em">km/h</span>
+            </div>
+            <div class="detail-sub" style="margin-top: auto">
+              Gusts calculated
+            </div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">
+              <svg viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"
+                />
+              </svg>
+              Cloud Cover
+            </div>
+            <div class="detail-value"><span id="cloud-cover">--</span>%</div>
+            <div class="detail-sub">Sky opacity</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">
+              <svg viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+                />
+              </svg>
+              Precipitation
+            </div>
+            <div class="detail-value">
+              <span id="precip">0</span>
+              <span style="font-size: 0.5em">mm</span>
+            </div>
+            <div class="detail-sub">Next 24h</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      // The Data provided in the prompt
+      const weatherData = {
+        hourly: {
+          time: [
+            "2025-12-24T00:00:00.000Z",
+            "2025-12-24T01:00:00.000Z",
+            "2025-12-24T02:00:00.000Z",
+            "2025-12-24T03:00:00.000Z",
+            "2025-12-24T04:00:00.000Z",
+            "2025-12-24T05:00:00.000Z",
+            "2025-12-24T06:00:00.000Z",
+            "2025-12-24T07:00:00.000Z",
+            "2025-12-24T08:00:00.000Z",
+            "2025-12-24T09:00:00.000Z",
+            "2025-12-24T10:00:00.000Z",
+            "2025-12-24T11:00:00.000Z",
+            "2025-12-24T12:00:00.000Z",
+            "2025-12-24T13:00:00.000Z",
+            "2025-12-24T14:00:00.000Z",
+            "2025-12-24T15:00:00.000Z",
+            "2025-12-24T16:00:00.000Z",
+            "2025-12-24T17:00:00.000Z",
+            "2025-12-24T18:00:00.000Z",
+            "2025-12-24T19:00:00.000Z",
+            "2025-12-24T20:00:00.000Z",
+            "2025-12-24T21:00:00.000Z",
+            "2025-12-24T22:00:00.000Z",
+            "2025-12-24T23:00:00.000Z",
+            "2025-12-25T00:00:00.000Z",
+            "2025-12-25T01:00:00.000Z",
+            "2025-12-25T02:00:00.000Z",
+            "2025-12-25T03:00:00.000Z",
+            "2025-12-25T04:00:00.000Z",
+            "2025-12-25T05:00:00.000Z",
+            "2025-12-25T06:00:00.000Z",
+            "2025-12-25T07:00:00.000Z",
+            "2025-12-25T08:00:00.000Z",
+            "2025-12-25T09:00:00.000Z",
+            "2025-12-25T10:00:00.000Z",
+            "2025-12-25T11:00:00.000Z",
+            "2025-12-25T12:00:00.000Z",
+            "2025-12-25T13:00:00.000Z",
+            "2025-12-25T14:00:00.000Z",
+            "2025-12-25T15:00:00.000Z",
+            "2025-12-25T16:00:00.000Z",
+            "2025-12-25T17:00:00.000Z",
+            "2025-12-25T18:00:00.000Z",
+            "2025-12-25T19:00:00.000Z",
+            "2025-12-25T20:00:00.000Z",
+            "2025-12-25T21:00:00.000Z",
+            "2025-12-25T22:00:00.000Z",
+            "2025-12-25T23:00:00.000Z",
+          ],
+          temperature_2m: {
+            0: 0.145,
+            1: -0.104,
+            2: -0.304,
+            3: -0.654,
+            4: -0.754,
+            5: -1.054,
+            6: -1.254,
+            7: -1.404,
+            8: -1.804,
+            9: -2.154,
+            10: -2.354,
+            11: -2.304,
+            12: -1.704,
+            13: -2.054,
+            14: -2.254,
+            15: -2.654,
+            16: -3.054,
+            17: -3.304,
+            18: -3.704,
+            19: -4.104,
+            20: -4.604,
+            21: -5.004,
+            22: -5.304,
+            23: -5.554,
+            24: -5.704,
+            25: -5.804,
+            26: -5.954,
+            27: -6.104,
+            28: -6.254,
+            29: -6.354,
+            30: -6.504,
+            31: -6.604,
+            32: -6.704,
+            33: -6.504,
+            34: -5.954,
+            35: -5.154,
+            36: -4.404,
+            37: -3.804,
+            38: -3.654,
+            39: -3.954,
+            40: -4.404,
+            41: -4.854,
+            42: -5.154,
+            43: -5.404,
+            44: -5.554,
+            45: -5.704,
+            46: -5.854,
+            47: -6.004,
+          },
+          apparent_temperature: {
+            0: -4.5,
+            1: -4.69,
+            2: -4.82,
+            3: -5.3,
+            4: -5.43,
+            5: -5.65,
+            6: -5.96,
+            7: -6.14,
+            8: -6.88,
+            9: -7.13,
+            10: -7.36,
+            11: -7.44,
+            12: -6.86,
+            13: -7.33,
+            14: -7.46,
+            15: -8.06,
+            16: -8.49,
+            17: -8.81,
+            18: -9.21,
+            19: -9.61,
+            20: -9.98,
+            21: -10.35,
+            22: -10.62,
+            23: -10.8,
+            24: -10.95,
+          },
+          weather_code: {
+            0: 1,
+            1: 0,
+            2: 0,
+            3: 1,
+            4: 0,
+            5: 1,
+            6: 2,
+            7: 2,
+            8: 3,
+            9: 3,
+            10: 3,
+            11: 2,
+            12: 2,
+            13: 2,
+            14: 2,
+            15: 1,
+            16: 0,
+            17: 0,
+            18: 0,
+            19: 0,
+            20: 0,
+            21: 0,
+            22: 0,
+            23: 0,
+            24: 1,
+            25: 1,
+            26: 1,
+            27: 1,
+            28: 1,
+            29: 1,
+            30: 0,
+            31: 0,
+          },
+          cloud_cover: {
+            0: 3,
+            1: 0,
+            2: 0,
+            3: 10,
+            4: 0,
+            5: 23,
+            6: 69,
+            7: 75,
+            8: 91,
+            9: 100,
+            10: 94,
+            11: 74,
+            12: 76,
+            13: 77,
+            14: 48,
+            15: 32,
+            16: 0,
+            17: 0,
+            18: 0,
+            19: 0,
+            20: 0,
+            21: 0,
+            22: 0,
+            23: 0,
+          },
+          wind_speed_10m: {
+            0: 14.5,
+            1: 14.0,
+            2: 13.5,
+            3: 14.1,
+            4: 13.6,
+            5: 12.7,
+            6: 13.3,
+            7: 13.3,
+            8: 15.1,
+            9: 14.1,
+            10: 13.7,
+            11: 14.3,
+            12: 14.8,
+            13: 15.4,
+            14: 14.5,
+            15: 15.3,
+            16: 15.1,
+            17: 15.2,
+            18: 15.1,
+            19: 15.1,
+            20: 14.4,
+            21: 14.4,
+            22: 14.3,
+            23: 13.9,
+          },
+        },
+      };
+
+      // Icons
+      const icons = {
+        clear: `<svg viewBox="0 0 24 24"><path d="M6.99 11L11 15.01 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, // Fallback
+        sun: `<svg viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></g></svg>`,
+        cloud: `<svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+        partlyCloudy: `<svg viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 8.49-8.49"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></g></svg>`,
+        moon: `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      };
+
+      function getIcon(code, hour) {
+        const isNight = hour < 6 || hour > 18;
+        if (code === 0 && isNight) return icons.moon;
+        if (code === 0) return icons.sun;
+        if (code === 1 || code === 2) return icons.partlyCloudy;
+        if (code === 3) return icons.cloud;
+        return icons.cloud;
+      }
+
+      function getDescription(code) {
+        switch (code) {
+          case 0:
+            return "Clear Sky";
+          case 1:
+            return "Mainly Clear";
+          case 2:
+            return "Partly Cloudy";
+          case 3:
+            return "Overcast";
+          default:
+            return "Cloudy";
+        }
+      }
+
+      // Initialize UI
+      function init() {
+        const timeArr = weatherData.hourly.time;
+        const tempObj = weatherData.hourly.temperature_2m;
+        const feelsObj = weatherData.hourly.apparent_temperature;
+        const codeObj = weatherData.hourly.weather_code;
+        const windObj = weatherData.hourly.wind_speed_10m;
+        const cloudObj = weatherData.hourly.cloud_cover;
+
+        // Set Current Data (Index 0)
+        const currentTemp = Math.round(tempObj[0]);
+        document.getElementById("main-temp").innerText = currentTemp;
+        document.getElementById("weather-desc").innerText = getDescription(
+          codeObj[0]
+        );
+        document.getElementById("feels-like").innerText = Math.round(
+          feelsObj[0]
+        );
+        document.getElementById("wind-speed").innerText = Math.round(
+          windObj[0]
+        );
+        document.getElementById("cloud-cover").innerText = cloudObj[0];
+
+        // Date formatting
+        const date = new Date(timeArr[0]);
+        const options = { weekday: "long", month: "long", day: "numeric" };
+        document.getElementById("current-date").innerText =
+          date.toLocaleDateString("en-US", options);
+
+        // Calculate High/Low for next 24h
+        let maxT = -999,
+          minT = 999;
+        const chartData = [];
+        const labels = [];
+
+        const hourlyContainer = document.getElementById("hourly-list");
+
+        // Process first 24 hours
+        for (let i = 0; i < 24; i++) {
+          const t = tempObj[i];
+          if (t > maxT) maxT = t;
+          if (t < minT) minT = t;
+
+          chartData.push(t);
+
+          const d = new Date(timeArr[i]);
+          const hour = d.getHours();
+          const displayTime = i === 0 ? "Now" : `${hour}:00`;
+          labels.push(displayTime);
+
+          // Populate Horizontal Scroll
+          const card = document.createElement("div");
+          card.className = `hour-card ${i === 0 ? "active" : ""}`;
+          card.innerHTML = `
+                    <div class="hour-time">${displayTime}</div>
+                    <div class="hour-icon">${getIcon(codeObj[i], hour)}</div>
+                    <div class="hour-temp">${Math.round(t)}°</div>
+                `;
+          hourlyContainer.appendChild(card);
+        }
+
+        document.getElementById("high-temp").innerText = Math.round(maxT);
+        document.getElementById("low-temp").innerText = Math.round(minT);
+
+        drawChart(chartData, labels);
+      }
+
+      function drawChart(data, labels) {
+        const canvas = document.getElementById("tempChart");
+        const ctx = canvas.getContext("2d");
+
+        // Handle retina display scaling
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+
+        const width = rect.width;
+        const height = rect.height;
+        const padding = { top: 40, bottom: 40, left: 20, right: 20 };
+
+        // Find range
+        const maxVal = Math.max(...data) + 1; // padding
+        const minVal = Math.min(...data) - 1;
+        const range = maxVal - minVal;
+
+        // Coordinates mapping
+        const getX = (index) =>
+          padding.left +
+          (index / (data.length - 1)) * (width - padding.left - padding.right);
+        const getY = (val) =>
+          height -
+          padding.bottom -
+          ((val - minVal) / range) * (height - padding.top - padding.bottom);
+
+        // Draw line
+        ctx.beginPath();
+        ctx.moveTo(getX(0), getY(data[0]));
+
+        // Smooth curve
+        for (let i = 0; i < data.length - 1; i++) {
+          const xMid = (getX(i) + getX(i + 1)) / 2;
+          const yMid = (getY(data[i]) + getY(data[i + 1])) / 2;
+          const cpX1 = (xMid + getX(i)) / 2;
+          const cpX2 = (xMid + getX(i + 1)) / 2;
+          ctx.quadraticCurveTo(getX(i), getY(data[i]), xMid, yMid); // Simple quad bezier approximation
+          // Ideally cubic, but quad is enough for visual
+        }
+        ctx.lineTo(getX(data.length - 1), getY(data[data.length - 1]));
+
+        // Styles
+        const gradient = ctx.createLinearGradient(0, 0, width, 0);
+        gradient.addColorStop(0, "#4facfe");
+        gradient.addColorStop(1, "#00f2fe");
+
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = gradient;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.stroke();
+
+        // Draw Area under line
+        ctx.lineTo(getX(data.length - 1), height);
+        ctx.lineTo(getX(0), height);
+        ctx.closePath();
+
+        const fillGrad = ctx.createLinearGradient(0, 0, 0, height);
+        fillGrad.addColorStop(0, "rgba(79, 172, 254, 0.3)");
+        fillGrad.addColorStop(1, "rgba(79, 172, 254, 0)");
+        ctx.fillStyle = fillGrad;
+        ctx.fill();
+
+        // Draw points
+        data.forEach((val, i) => {
+          if (i % 4 === 0) {
+            // Only draw every 4th point to avoid clutter
+            const x = getX(i);
+            const y = getY(val);
+
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+
+            // Text
+            ctx.font = "10px -apple-system";
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.textAlign = "center";
+            ctx.fillText(Math.round(val) + "°", x, y - 10);
+          }
+        });
+      }
+
+      init();
+    </script>
   </body>
 </html>

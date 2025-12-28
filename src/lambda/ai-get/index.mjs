@@ -3,12 +3,21 @@ import { fetchWeatherApi } from "openmeteo";
 
 const html = fs.readFileSync("index.html", "utf-8");
 
-export async function handler(event) {
+const PREPROMPTv1 = `respond with just plaintext html/css/js (one file) of a webpage to graphically display the data at the end of this prompt.
+
+The webpage should make heavy use of css and look like a sleek, modern weather app, however it requires no functionality beyond displaying this data. It does not need a search bar, or any interactivity beyond aesthetics.
+The website should work properly with both mobile and desktop and all browsers and have some unique flair meaning if this prompt is used again the result will be drastically different. The design does not have to be adaptable to different sets of weather data, it is only going to be used with the data provided, so incorporate the weather data into the styling, not just displaying the information in a standard format`;
+
+export async function handler(event, x, y) {
+  console.log(event);
+  console.log(x);
+  console.log(y);
   const lat = 52.52;
   const long = 13.41;
   const wd = await getWeatherData(lat, long);
-  const formattedWd = tmpFormatData(wd);
-  const substitutedHTML = html.replace("$$WEATHER_DATA$$", formattedWd);
+  formatWeatherObj(wd);
+  const wdStr = encode(wd);
+  const substitutedHTML = html.replace("$$WEATHER_DATA$$", wdStr);
   await new Promise((res) => setTimeout(res, 1000));
   const response = {
     statusCode: 200,
@@ -20,8 +29,12 @@ export async function handler(event) {
   return response;
 }
 
-function tmpFormatData(weatherData) {
-  return `<pre>${JSON.stringify(weatherData, null, 2)}</pre>`;
+function formatWeatherObj(weatherData) {
+  for (let prop in weatherData.hourly) {
+    if (prop != "time") {
+      weatherData.hourly[prop] = Object.values(weatherData.hourly[prop]);
+    }
+  }
 }
 
 async function getWeatherData(lat, long) {
