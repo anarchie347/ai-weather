@@ -38,8 +38,11 @@
   <script>
     async function placeSubmit() {
       const place = document.getElementById("place").value;
-      console.log(place);
-      document.getElementById("display").setAttribute("src", "/ai-get");
+      const [lat, long] = await geocode(place);
+      console.log([lat, long]);
+      const url = `/ai-get?lat=${encodeURIComponent(lat)}&long=${encodeURIComponent(long)}`;
+      console.log(url);
+      document.getElementById("display").setAttribute("src", url);
       document.getElementById("fetching-container").hidden = false;
       document.getElementById("place-selector-container").hidden = true;
       //const newsite = await (await fetch("ai-get")).text();
@@ -50,6 +53,14 @@
       if (document.getElementById("display").getAttribute("src") == "") return;
       document.getElementById("fetching-container").hidden = true;
       document.getElementById("generated-app-container").hidden = false;
+    }
+    async function geocode(place) {
+      const url = "https://photon.komoot.io/api/?limit=1&q=" + encodeURIComponent(place);
+      const resp = JSON.parse(await (await fetch(url)).text());
+      const coded = resp.features[0]
+      if (coded.properties.osm_key !== "place")
+        return null;
+      return coded.geometry.coordinates
     }
   </script>
 </html>
