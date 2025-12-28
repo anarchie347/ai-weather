@@ -1,3 +1,4 @@
+import { encode } from "@toon-format/toon";
 import fs from "node:fs";
 import { fetchWeatherApi } from "openmeteo";
 
