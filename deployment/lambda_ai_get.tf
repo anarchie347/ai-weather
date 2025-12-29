@@ -12,7 +12,7 @@ resource "aws_lambda_function" "lambda_ai_get" {
   runtime = "nodejs22.x"
   handler = "index.handler"
   source_code_hash = data.archive_file.lambda_ai_get.output_base64sha256
-  timeout = 10
+  timeout = 60
 }
 
 resource "aws_lambda_permission" "lambda_ai_get_api_access" {

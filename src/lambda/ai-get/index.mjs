@@ -1,8 +1,16 @@
+import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
+import { GoogleGenAI } from "@google/genai";
 import { encode } from "@toon-format/toon";
-import fs from "node:fs";
 import { fetchWeatherApi } from "openmeteo";
 
-const html = fs.readFileSync("index.html", "utf-8");
+const ssmClient = new SSMClient({});
+const geminiFetchCmd = new GetParameterCommand({
+  Name: "gemini-api-key",
+  WithDecryption: true,
+});
+const geminiApiKey = (await ssmClient.send(geminiFetchCmd)).Parameter.Value;
+
+const ai = new GoogleGenAI({ apiKey: geminiApiKey });
 
 const PREPROMPTv1 = `respond with just plaintext html/css/js (one file) of a webpage to graphically display the data at the end of this prompt.
 
@@ -15,14 +23,21 @@ export async function handler(event) {
   const wd = await getWeatherData(lat, long);
   formatWeatherObj(wd);
   const wdStr = encode(wd);
-  const substitutedHTML = html.replace("$$WEATHER_DATA$$", wdStr);
-  await new Promise((res) => setTimeout(res, 1000));
+  console.log("EE");
+  const ai_resp = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: wdStr,
+    config: { systemInstruction: PREPROMPTv1 },
+  });
+  console.log("QQQ");
+  const html = ai_resp.text;
+  console.log(html);
   const response = {
     statusCode: 200,
     headers: {
       "Content-Type": "text/html",
     },
-    body: substitutedHTML,
+    body: html,
   };
   return response;
 }
