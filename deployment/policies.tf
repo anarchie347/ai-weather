@@ -11,18 +11,18 @@ data "aws_iam_policy_document" "lambda_assume_role_policy_doc" {
   }
 }
 
-// ROLES
-
-resource "aws_iam_role" "lambda_assume_role" {
-  name = "lambda_assume_role"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy_doc.json
+data "aws_iam_policy_document" "gemini_api_key_access_policy_doc" {
+  statement {
+    actions = ["ssm:GetParameter"]
+    resources = [aws_ssm_parameter.gemini_api_key.arn]
+  }
 }
 
+// POLICIES
 
-
-// Lambda logging
-
-resource "aws_iam_role_policy_attachment" "lambda_logs_attachment" {
-  role = aws_iam_role.lambda_assume_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+resource "aws_iam_policy" "gemini_api_key_access_policy" {
+  name = "gemini-api-key-access"
+  description = "grants access to read the gemnini api key from SSM Parameterstore"
+  policy = data.aws_iam_policy_document.gemini_api_key_access_policy_doc.json
+  
 }

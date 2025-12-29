@@ -7,7 +7,7 @@ data "archive_file" "lambda_ai_get" {
 
 resource "aws_lambda_function" "lambda_ai_get" {
   function_name = "ai-get"
-  role = aws_iam_role.lambda_assume_role.arn
+  role = aws_iam_role.lambda_ai_get_role.arn
   filename = "../src/lambda/ai-get/ai-get.zip"
   runtime = "nodejs22.x"
   handler = "index.handler"
@@ -21,4 +21,20 @@ resource "aws_lambda_permission" "lambda_ai_get_api_access" {
   function_name = aws_lambda_function.lambda_ai_get.function_name
   principal = "apigateway.amazonaws.com"
   source_arn = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
+}
+
+resource "aws_iam_role" "lambda_ai_get_role" {
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role_policy_doc.json
+  description = "Role with permissions for ai-get"
+  name = "lambda-ai-get-role"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_ai_get_attach_logs" {
+  role = aws_iam_role.lambda_ai_get_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_ai_get_attach_gemini_key" {
+  role = aws_iam_role.lambda_ai_get_role.name
+  policy_arn = aws_iam_policy.gemini_api_key_access_policy.arn
 }
