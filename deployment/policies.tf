@@ -18,6 +18,20 @@ data "aws_iam_policy_document" "gemini_api_key_access_policy_doc" {
   }
 }
 
+data "aws_iam_policy_document" "pagestore_put_policy_doc" {
+  statement {
+    actions = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.pagestore.arn}/*"]
+  }
+}
+
+data "aws_iam_policy_document" "pagestore_get_policy_doc" {
+  statement {
+    actions = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.pagestore.arn}/*"]
+  }
+}
+
 // POLICIES
 
 resource "aws_iam_policy" "gemini_api_key_access_policy" {
@@ -25,4 +39,16 @@ resource "aws_iam_policy" "gemini_api_key_access_policy" {
   description = "grants access to read the gemnini api key from SSM Parameterstore"
   policy = data.aws_iam_policy_document.gemini_api_key_access_policy_doc.json
   
+}
+
+resource "aws_iam_policy" "pagestore_put_policy" {
+  name = "pagestore-put"
+  description = "PutObject permission for pagestore bucket"
+  policy = data.aws_iam_policy_document.pagestore_put_policy_doc.json
+}
+
+resource "aws_iam_policy" "pagestore_get_policy" {
+  name = "pagestore-get"
+  description = "GetObject permission for pagestore bucket"
+  policy = data.aws_iam_policy_document.pagestore_get_policy_doc.json
 }

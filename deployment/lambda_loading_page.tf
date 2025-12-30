@@ -12,6 +12,7 @@ resource "aws_lambda_function" "lambda_loading_page" {
   runtime = "nodejs22.x"
   handler = "index.handler"
   source_code_hash = data.archive_file.lambda_loading_page.output_base64sha256
+
 }
 
 resource "aws_lambda_permission" "api_access" {

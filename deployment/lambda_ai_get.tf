@@ -12,7 +12,13 @@ resource "aws_lambda_function" "lambda_ai_get" {
   runtime = "nodejs22.x"
   handler = "index.handler"
   source_code_hash = data.archive_file.lambda_ai_get.output_base64sha256
-  timeout = 60
+  timeout = 180
+
+  environment {
+    variables = {
+      PAGESTORE_BUCKET = aws_s3_bucket.pagestore.bucket
+    }
+  }
 }
 
 resource "aws_lambda_permission" "lambda_ai_get_api_access" {
@@ -37,4 +43,9 @@ resource "aws_iam_role_policy_attachment" "lambda_ai_get_attach_logs" {
 resource "aws_iam_role_policy_attachment" "lambda_ai_get_attach_gemini_key" {
   role = aws_iam_role.lambda_ai_get_role.name
   policy_arn = aws_iam_policy.gemini_api_key_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_ai_get_attach_pagestore_put" {
+  role = aws_iam_role.lambda_ai_get_role.name
+  policy_arn = aws_iam_policy.pagestore_put_policy.arn
 }

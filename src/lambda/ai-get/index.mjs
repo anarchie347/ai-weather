@@ -1,3 +1,4 @@
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
 import { GoogleGenAI } from "@google/genai";
 import { encode } from "@toon-format/toon";
@@ -8,6 +9,9 @@ const geminiFetchCmd = new GetParameterCommand({
   Name: "gemini-api-key",
   WithDecryption: true,
 });
+
+const s3Client = new S3Client({});
+
 const geminiApiKey = (await ssmClient.send(geminiFetchCmd)).Parameter.Value;
 
 const ai = new GoogleGenAI({ apiKey: geminiApiKey });
@@ -24,6 +28,9 @@ export async function handler(event) {
   formatWeatherObj(wd);
   const wdStr = encode(wd);
   console.log("EE");
+
+  const s3Key = `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+
   const ai_resp = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: wdStr,
@@ -32,6 +39,12 @@ export async function handler(event) {
   console.log("QQQ");
   const html = ai_resp.text;
   console.log(html);
+  const storeToS3Cmd = new PutObjectCommand({
+    Bucket: process.env.PAGESTORE_BUCKET,
+    Key: s3Key,
+    Body: html,
+  });
+  await s3Client.send(storeToS3Cmd);
   const response = {
     statusCode: 200,
     headers: {
