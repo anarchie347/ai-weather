@@ -23,6 +23,15 @@ resource "aws_apigatewayv2_integration" "api_ai_lambda" {
   integration_uri = aws_lambda_function.lambda_ai_get.invoke_arn
 }
 
+resource "aws_apigatewayv2_integration" "api_page_fetch" {
+  api_id = aws_apigatewayv2_api.api.id
+  integration_type = "AWS_PROXY"
+  connection_type = "INTERNET"
+  description = "links to the page fetch lambda"
+  integration_method = "POST"
+  integration_uri = aws_lambda_function.lambda_page_fetch.invoke_arn
+}
+
 resource "aws_apigatewayv2_route" "api_ai_weather" {
   api_id = aws_apigatewayv2_api.api.id
   route_key = "GET /ai-weather"
@@ -33,6 +42,12 @@ resource "aws_apigatewayv2_route" "api_ai_get" {
   api_id = aws_apigatewayv2_api.api.id
   route_key = "GET /ai-get"
   target = "integrations/${aws_apigatewayv2_integration.api_ai_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "api_page_fetch" {
+  api_id = aws_apigatewayv2_api.api.id
+  route_key = "GET /page-fetch"
+  target = "integrations/${aws_apigatewayv2_integration.api_page_fetch.id}"
 }
 
 resource "aws_apigatewayv2_stage" "api_ai_weather_stage" {

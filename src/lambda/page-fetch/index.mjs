@@ -3,7 +3,7 @@ import { GetObjectCommand, NoSuchKey, S3Client } from "@aws-sdk/client-s3";
 const s3Client = new S3Client({});
 
 export async function handler(event) {
-  const id = Number.parseFloat(Numberevent.queryStringParameters.id).toString(); //validation on input
+  const id = Number.parseFloat(event.queryStringParameters.id).toString(); //validation on input
 
   try {
     const fetchCmd = new GetObjectCommand({
@@ -12,6 +12,7 @@ export async function handler(event) {
     });
     const resp = await s3Client.send(fetchCmd);
     const str = await resp.Body.transformToString();
+    console.log("SUCCESS");
     const response = {
       statusCode: 200,
       headers: {
@@ -23,7 +24,7 @@ export async function handler(event) {
   } catch (ex) {
     if (ex instanceof NoSuchKey) {
       // return some html
-
+      console.log("NOKEY");
       const response = {
         statusCode: 204,
         headers: {
@@ -33,6 +34,7 @@ export async function handler(event) {
       };
       return response;
     }
+    console.log("OTHER PROBLM");
   }
 }
 
