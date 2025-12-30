@@ -1,5 +1,20 @@
 import { GetObjectCommand, NoSuchKey, S3Client } from "@aws-sdk/client-s3";
 
+const waitingHTML = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ai Weather</title>
+  </head>
+  <body>
+    <div id="fetching-container">
+      <h1>Generating...</h1>
+    </div>
+  </body>
+</html>
+`;
+
 const s3Client = new S3Client({});
 
 export async function handler(event) {
@@ -27,28 +42,10 @@ export async function handler(event) {
       console.log("NOKEY");
       const response = {
         statusCode: 204,
-        headers: {
-          "Content-Type": "text/html",
-        },
-        body: waitingHTML,
       };
       return response;
     }
     console.log("OTHER PROBLM");
+    console.log(ex);
   }
 }
-
-const waitingHTML = `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ai Weather</title>
-  </head>
-  <body>
-    <div id="fetching-container" hidden>
-      <h1>Generating...</h1>
-    </div>
-  </body>
-</html>
-`;

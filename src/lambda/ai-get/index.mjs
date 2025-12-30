@@ -29,7 +29,7 @@ export async function handler(event) {
   const wdStr = encode(wd);
   console.log("EE");
 
-  const s3Key = `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+  const s3Key = (Date.now() + Math.random()).toString();
 
   const ai_resp = await ai.models.generateContent({
     model: "gemini-2.5-flash",

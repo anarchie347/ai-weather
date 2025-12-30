@@ -27,8 +27,8 @@ data "aws_iam_policy_document" "pagestore_put_policy_doc" {
 
 data "aws_iam_policy_document" "pagestore_get_policy_doc" {
   statement {
-    actions = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.pagestore.arn}/*"]
+    actions = ["s3:GetObject", "s3:ListBucket"]
+    resources = ["${aws_s3_bucket.pagestore.arn}/*", aws_s3_bucket.pagestore.arn]
   }
 }
 
