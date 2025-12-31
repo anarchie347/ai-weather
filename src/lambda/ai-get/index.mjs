@@ -21,38 +21,26 @@ const PREPROMPTv1 = `respond with just plaintext html/css/js (one file) of a web
 The webpage should make heavy use of css and look like a sleek, modern weather app, however it requires no functionality beyond displaying this data. It does not need a search bar, or any interactivity beyond aesthetics.
 The website should work properly with both mobile and desktop and all browsers and have some unique flair meaning if this prompt is used again the result will be drastically different. The design does not have to be adaptable to different sets of weather data, it is only going to be used with the data provided, so incorporate the weather data into the styling, not just displaying the information in a standard format`;
 
-export async function handler(event) {
-  const lat = Number.parseInt(event.queryStringParameters.lat);
-  const long = Number.parseInt(event.queryStringParameters.long);
+export async function handler(args) {
+  const { lat, long, s3Key } = args;
   const wd = await getWeatherData(lat, long);
   formatWeatherObj(wd);
   const wdStr = encode(wd);
-  console.log("EE");
-
-  const s3Key = (Date.now() + Math.random()).toString();
 
   const ai_resp = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: wdStr,
     config: { systemInstruction: PREPROMPTv1 },
   });
-  console.log("QQQ");
+
   const html = ai_resp.text;
   console.log(html);
+
   const storeToS3Cmd = new PutObjectCommand({
     Bucket: process.env.PAGESTORE_BUCKET,
     Key: s3Key,
     Body: html,
   });
-  await s3Client.send(storeToS3Cmd);
-  const response = {
-    statusCode: 200,
-    headers: {
-      "Content-Type": "text/html",
-    },
-    body: html,
-  };
-  return response;
 }
 
 function formatWeatherObj(weatherData) {
