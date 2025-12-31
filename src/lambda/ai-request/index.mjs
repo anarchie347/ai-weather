@@ -8,7 +8,7 @@ export async function handler(event) {
   const s3Key = (Date.now() + Math.random()).toString();
 
   const invokeCmd = new InvokeCommand({
-    FunctionName: process.env.workerFuncName,
+    FunctionName: process.env.WORKER_FUNC_NAME,
     InvocationType: "Event",
     Payload: {
       lat,
@@ -16,7 +16,7 @@ export async function handler(event) {
       s3Key,
     },
   });
-
+  await lambdaClient.send(invokeCmd);
   const response = {
     statusCode: 202,
     jobId: s3Key,

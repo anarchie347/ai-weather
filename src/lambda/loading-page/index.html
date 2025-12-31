@@ -40,7 +40,7 @@
       const place = document.getElementById("place").value;
       const [lat, long] = await geocode(place);
       console.log([lat, long]);
-      const url = `/ai-get?lat=${encodeURIComponent(lat)}&long=${encodeURIComponent(long)}`;
+      const url = `/ai-request?lat=${encodeURIComponent(lat)}&long=${encodeURIComponent(long)}`;
       console.log(url);
       document.getElementById("display").setAttribute("src", url);
       document.getElementById("fetching-container").hidden = false;

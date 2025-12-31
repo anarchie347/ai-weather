@@ -32,6 +32,13 @@ data "aws_iam_policy_document" "pagestore_get_policy_doc" {
   }
 }
 
+data "aws_iam_policy_document" "ai_get_invoke_policy_doc" {
+  statement {
+    actions = ["lambda:InvokeFunction"]
+    resources = [aws_lambda_function.lambda_ai_get.arn]
+  }
+}
+
 // POLICIES
 
 resource "aws_iam_policy" "gemini_api_key_access_policy" {
@@ -51,4 +58,10 @@ resource "aws_iam_policy" "pagestore_get_policy" {
   name = "pagestore-get"
   description = "GetObject permission for pagestore bucket"
   policy = data.aws_iam_policy_document.pagestore_get_policy_doc.json
+}
+
+resource "aws_iam_policy" "ai_get_invoke_policy" {
+  name = "ai-get-invoke"
+  description = "InvokeFunction permission for ai-get lambda"
+  policy = data.aws_iam_policy_document.ai_get_invoke_policy_doc.json
 }
