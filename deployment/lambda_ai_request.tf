@@ -39,3 +39,8 @@ resource "aws_iam_role_policy_attachment" "lambda_ai_request_attach_logs" {
   role = aws_iam_role.lambda_ai_request_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
+
+resource "aws_iam_role_policy_attachment" "lambda_ai_request_attach_invoke" {
+  role = aws_iam_role.lambda_ai_request_role.name
+  policy_arn = aws_iam_policy.ai_get_invoke_policy.arn
+}

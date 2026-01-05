@@ -10,11 +10,11 @@ export async function handler(event) {
   const invokeCmd = new InvokeCommand({
     FunctionName: process.env.WORKER_FUNC_NAME,
     InvocationType: "Event",
-    Payload: {
+    Payload: JSON.stringify({
       lat,
       long,
       s3Key,
-    },
+    }),
   });
   await lambdaClient.send(invokeCmd);
   const response = {
