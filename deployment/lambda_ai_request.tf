@@ -17,6 +17,7 @@ resource "aws_lambda_function" "lambda_ai_request" {
   environment {
     variables = {
         WORKER_FUNC_NAME = aws_lambda_function.lambda_ai_get.function_name
+        PAGE_FETCH_ENDPOINT = replace(aws_apigatewayv2_route.api_page_fetch.route_key, "GET ", "")
     }
   }
 }

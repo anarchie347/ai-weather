@@ -19,7 +19,9 @@ export async function handler(event) {
   await lambdaClient.send(invokeCmd);
   const response = {
     statusCode: 202,
-    jobId: s3Key,
+    headers: {
+      location: `${process.env.PAGE_FETCH_ENDPOINT}?id=${s3Key}`,
+    },
   };
   return response;
 }
