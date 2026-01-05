@@ -41,6 +41,7 @@ export async function handler(args) {
     Key: s3Key,
     Body: html,
   });
+  await s3Client.send(storeToS3Cmd);
 }
 
 function formatWeatherObj(weatherData) {
