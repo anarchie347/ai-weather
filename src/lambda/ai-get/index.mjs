@@ -21,7 +21,7 @@ const PREPROMPTv1 = `respond with just plaintext html/css/js (one file) of a web
 The webpage should make heavy use of css and look like a sleek, modern weather app, however it requires no functionality beyond displaying this data. It does not need a search bar, or any interactivity beyond aesthetics.
 The website should work properly with both mobile and desktop and all browsers and have some unique flair meaning if this prompt is used again the result will be drastically different. The design does not have to be adaptable to different sets of weather data, it is only going to be used with the data provided, so incorporate the weather data into the styling, not just displaying the information in a standard format`;
 
-const PREPROMPTv2 = `respond with just plaintext html/css/js with no markdown formatting. Create a graphically interesting and unique webpage to display the weather data given. The webpage should incorporate the data into the structure and styling of the webpage, and should not be adaptable for other weather data. You do not need to display all of the weather data, focus on a fun, interesting and unique webpage design that will be different every time this prompt is used. The webpage should not have any functionality beyond presenting the data. It should work well on all platforms`;
+const PREPROMPTv2 = `respond with just plaintext html/css/js with no markdown formatting. Create a graphically interesting and unique webpage to display the weather data given. The webpage should incorporate the data into the structure and styling of the webpage, and should not be adaptable for other weather data. You do not need to display all of the weather data, focus on a fun, interesting and unique webpage design that will be different every time this prompt is used. The webpage should not have any functionality beyond presenting the data. It should work well on all platforms. Do not hallucinate any data, ensure any data that is provided to the user is accurate`;
 
 export async function handler(args) {
   const { lat, long, s3Key } = args;
@@ -95,8 +95,8 @@ async function getWeatherData(lat, long) {
         (_, i) =>
           new Date(
             (Number(hourly.time()) + i * hourly.interval() + utcOffsetSeconds) *
-              1000
-          )
+              1000,
+          ),
       ),
       temperature_2m: hourly.variables(0).valuesArray(),
       apparent_temperature: hourly.variables(1).valuesArray(),
