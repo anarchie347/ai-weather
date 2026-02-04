@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -8,7 +8,13 @@
   <body>
     <div id="place-selector-container">
       <h1>AI-Weather!!</h1>
-      <form onsubmit="placeSubmit(); return false;" id="place-selector">
+      <form
+        onsubmit="
+          placeSubmit();
+          return false;
+        "
+        id="place-selector"
+      >
         <label for="place">Place:</label>
         <input id="place" type="text" name="place" />
         <input type="submit" name="submit" value="Get Weather!" />
@@ -18,13 +24,8 @@
       <h1>Fetching...</h1>
       <h3>(This normally takes around 2-3mins)</h3>
     </div>
-    <div id="generated-app-container" hidden=>
-      <iframe
-        src=""
-        id="display"
-        onload="onAppLoaded();"
-      >
-      </iframe>
+    <div id="generated-app-container" hidden="">
+      <iframe src="" id="display" onload="onAppLoaded()"> </iframe>
     </div>
   </body>
   <style>
@@ -41,13 +42,13 @@
       document.getElementById("fetching-container").hidden = false;
       document.getElementById("place-selector-container").hidden = true;
       const place = document.getElementById("place").value;
-      const [lat, long] = await geocode(place);
+      const [long, lat] = await geocode(place);
       console.log([lat, long]);
       const url = `/ai-request?lat=${encodeURIComponent(lat)}&long=${encodeURIComponent(long)}`;
       const resp = await fetch(url);
-      const pollUrl = resp.headers.get("location")
+      const pollUrl = resp.headers.get("location");
 
-      pollFetchUrl(pollUrl)
+      pollFetchUrl(pollUrl);
       //const newsite = await (await fetch("ai-get")).text();
       //console.log(newsite);
       //document.getElementById("container").innerHTML = newsite;
@@ -56,10 +57,9 @@
       const interval = setInterval(async () => {
         const resp = await fetch(url);
         if (resp.status == 200) {
-                document.getElementById("display").setAttribute("src", url);
-                clearInterval(interval);
-        } else
-        console.log("retried..")
+          document.getElementById("display").setAttribute("src", url);
+          clearInterval(interval);
+        } else console.log("retried..");
       }, 5000);
     }
     function onAppLoaded() {
@@ -68,12 +68,12 @@
       document.getElementById("generated-app-container").hidden = false;
     }
     async function geocode(place) {
-      const url = "https://photon.komoot.io/api/?limit=1&q=" + encodeURIComponent(place);
+      const url =
+        "https://photon.komoot.io/api/?limit=1&q=" + encodeURIComponent(place);
       const resp = JSON.parse(await (await fetch(url)).text());
-      const coded = resp.features[0]
-      if (coded.properties.osm_key !== "place")
-        return null;
-      return coded.geometry.coordinates
+      const coded = resp.features[0];
+      if (coded.properties.osm_key !== "place") return null;
+      return coded.geometry.coordinates;
     }
   </script>
 </html>
