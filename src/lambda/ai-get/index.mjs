@@ -34,7 +34,6 @@ export async function handler(args) {
     contents: wdStr,
     config: { systemInstruction: PREPROMPTv2 },
   });
-
   const html = ai_resp.text;
   console.log(html);
 
@@ -84,7 +83,7 @@ async function getWeatherData(lat, long) {
   const hourly = response.hourly();
 
   // Note: The order of weather variables in the URL query and the indices below need to match!
-  return {
+  const toRet = {
     hourly: {
       time: Array.from(
         {
@@ -107,4 +106,7 @@ async function getWeatherData(lat, long) {
       temperature_80m: hourly.variables(6).valuesArray(),
     },
   };
+  console.log(lat, long);
+  console.log(JSON.stringify(toRet));
+  return toRet;
 }
