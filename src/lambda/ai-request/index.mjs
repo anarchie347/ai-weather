@@ -5,6 +5,7 @@ const lambdaClient = new LambdaClient({});
 export async function handler(event) {
   const lat = Number.parseFloat(event.queryStringParameters.lat);
   const long = Number.parseFloat(event.queryStringParameters.long);
+  const placeName = event.queryStringParameters.placeName;
   const s3Key = (Date.now() + Math.random()).toString();
 
   const invokeCmd = new InvokeCommand({
@@ -14,6 +15,7 @@ export async function handler(event) {
       lat,
       long,
       s3Key,
+      placeName,
     }),
   });
   await lambdaClient.send(invokeCmd);

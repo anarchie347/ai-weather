@@ -44,7 +44,7 @@
       const place = document.getElementById("place").value;
       const [long, lat] = await geocode(place);
       console.log([lat, long]);
-      const url = `/ai-request?lat=${encodeURIComponent(lat)}&long=${encodeURIComponent(long)}`;
+      const url = `/ai-request?lat=${encodeURIComponent(lat)}&long=${encodeURIComponent(long)}&placeName=${encodeURIComponent(place)}`;
       const resp = await fetch(url);
       const pollUrl = resp.headers.get("location");
 

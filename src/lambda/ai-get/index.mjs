@@ -21,10 +21,11 @@ const PREPROMPTv1 = `respond with just plaintext html/css/js (one file) of a web
 The webpage should make heavy use of css and look like a sleek, modern weather app, however it requires no functionality beyond displaying this data. It does not need a search bar, or any interactivity beyond aesthetics.
 The website should work properly with both mobile and desktop and all browsers and have some unique flair meaning if this prompt is used again the result will be drastically different. The design does not have to be adaptable to different sets of weather data, it is only going to be used with the data provided, so incorporate the weather data into the styling, not just displaying the information in a standard format`;
 
-const PREPROMPTv2 = `respond with just plaintext html/css/js with no markdown formatting. Create a graphically interesting and unique webpage to display the weather data given. The webpage should incorporate the data into the structure and styling of the webpage, and should not be adaptable for other weather data. You do not need to display all of the weather data, focus on a fun, interesting and unique webpage design that will be different every time this prompt is used. The webpage should not have any functionality beyond presenting the data. It should work well on all platforms. Do not hallucinate any data, ensure any data that is provided to the user is accurate`;
+const PREPROMPTv2 = `respond with just plaintext html/css/js with no markdown formatting. Create a graphically interesting and unique webpage to display the weather data given. The webpage should incorporate the data into the structure and styling of the webpage, and should not be adaptable for other weather data. You do not need to display all of the weather data, focus on a fun, interesting and unique webpage design that will be different every time this prompt is used. The webpage should not have any functionality beyond presenting the data and interactivity involved with presenting the data. It should work well on all platforms. If you wish to use the place name in the website design, use the string \`__PLACE_NAME__\`. Do not hallucinate any data, ensure any data that is provided to the user is accurate`;
 
 export async function handler(args) {
-  const { lat, long, s3Key } = args;
+  const { lat, long, s3Key, placeName } = args;
+  const placeSanitised = sanitize(placeName);
   const wd = await getWeatherData(lat, long);
   formatWeatherObj(wd);
   const wdStr = encode(wd);
@@ -34,7 +35,7 @@ export async function handler(args) {
     contents: wdStr,
     config: { systemInstruction: PREPROMPTv2 },
   });
-  const html = ai_resp.text;
+  const html = ai_resp.text.replaceAll("__PLACE_NAME__", placeSanitised);
   console.log(html);
 
   const storeToS3Cmd = new PutObjectCommand({
@@ -109,4 +110,21 @@ async function getWeatherData(lat, long) {
   console.log(lat, long);
   console.log(JSON.stringify(toRet));
   return toRet;
+}
+
+// Source - https://stackoverflow.com/a/48226843
+// Posted by SilentImp, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-02-07, License - CC BY-SA 4.0
+
+function sanitize(string) {
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    "/": "&#x2F;",
+  };
+  const reg = /[&<>"'/]/gi;
+  return string.replace(reg, (match) => map[match]);
 }
